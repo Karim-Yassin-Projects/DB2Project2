@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="PopulateData" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="Program" />
+    <module name="db2project2" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

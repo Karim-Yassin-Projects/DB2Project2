@@ -14,13 +14,32 @@ public class Program {
         Class.forName("org.postgresql.Driver");
         System.out.println("Postgres JDBC Driver Registered!");
 
-        insertSchema("schema1", Schema1::insertSchema1);
-        insertSchema("schema2", Schema2::insertSchema2);
-        insertSchema("schema3", Schema3::insertSchema3);
+
+        //createTables("schema1");
+        //createTables("schema2");
+        //createTables("schema3");
+        createTables("schema4");
+
+        // wait for enter to be pressed
+        System.out.println("Press enter to populate schemas...");
+        int result;
+        do {
+            result = System.in.read();
+        } while (result != '\n');
+
+        //insertSchema("schema1", Schema1::insertSchema1);
+        //insertSchema("schema2", Schema2::insertSchema2);
+        //insertSchema("schema3", Schema3::insertSchema3);
         insertSchema("schema4", Schema4::insertSchema4);
     }
 
     private static void insertSchema(String name, SchemaPopulator runnable) throws SQLException, IOException {
+        try(Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/" + name, "postgres", "postgres")) {
+            runnable.populate(connection);
+        }
+    }
+
+    private static void createTables(String name) throws SQLException, IOException {
         try(Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:5432/postgres", "postgres", "postgres")){
             dropDatabase(connection, name);
             createDatabase(connection, name);
@@ -36,7 +55,6 @@ public class Program {
                 connection.createStatement().execute(sql);
                 System.out.println("Done loading schema: " + name);
             }
-            runnable.populate(connection);
         }
     }
 

@@ -137,9 +137,14 @@ public class Schema2 {
         // inserting Supervisors
         for (int i = 1; i <= nSupervisors; i++) {
             String sex = AllSchemas.randomElement(genders);
-            int random_supervisor_salary = AllSchemas.random(10000, 60001);
+            int random_supervisor_salary = AllSchemas.random(25000, 80001);
             int random_department = AllSchemas.random(1, 151);
-            insertEmployee(AllSchemas.randomElement(AllSchemas.names),
+            if (random_department == 5) {
+                random_supervisor_salary = AllSchemas.random(10000, 20001);
+            }
+            insertEmployee(AllSchemas.randomElement(
+                    sex.equals("M") ? AllSchemas.maleNames : AllSchemas.femaleNames
+                    ),
                     Character.toString(AllSchemas.random('A', 'Z' + 1)),
                     i == 1 ? "employee1" : AllSchemas.randomElement(AllSchemas.lastNames), i,
                     AllSchemas.randomDateOfBirth(), "address" + i, sex,
@@ -153,11 +158,11 @@ public class Schema2 {
             if (random_department == 5) {
                 random_salary = AllSchemas.random(10000, 20001);
             } else {
-                random_salary = AllSchemas.random(10000, 60001);
+                random_salary = AllSchemas.random(10000, 80001);
             }
             int superSNN = AllSchemas.random(1, nSupervisors + 1);
             insertEmployee(
-                    AllSchemas.randomElement(AllSchemas.names),
+                    AllSchemas.randomElement(sex.equals("M") ? AllSchemas.maleNames : AllSchemas.femaleNames),
                     Character.toString(AllSchemas.random('A', 'Z' + 1)),
                     AllSchemas.randomElement(AllSchemas.lastNames), i, AllSchemas.randomDateOfBirth(), "address" + i, sex,
                     random_salary, superSNN, random_department);
@@ -210,17 +215,10 @@ public class Schema2 {
 
     private void populateDependent() throws SQLException {
         System.out.println("Populating Dependent");
-        for (int i = 1; i <= 700; i++) {
+        for (int i = 1; i <= 10000; i++) {
             String sex = AllSchemas.randomElement(genders);
             String relation = AllSchemas.randomElement(relationships);
-            if (i <= 600) {
-                insertDependent(i, AllSchemas.randomElement(AllSchemas.names), sex, AllSchemas.randomDate(), relation);
-            } else {
-                int random_employee = AllSchemas.random(1, nEmployees + 1);
-                insertDependent(i, "employee" + random_employee, sex,
-                        AllSchemas.randomDateOfBirth()
-                        , relation);
-            }
+            insertDependent(i, AllSchemas.randomElement(sex.equals("M") ? AllSchemas.maleNames : AllSchemas.femaleNames), sex, AllSchemas.randomDate(), relation);
         }
     }
 

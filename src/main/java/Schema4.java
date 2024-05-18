@@ -202,7 +202,8 @@ public class Schema4 {
         System.out.println("Populating Actor");
         for (int i = 1; i <= 120000; i++) {
             String gender = AllSchemas.randomElement(genders);
-            insertActor(i, AllSchemas.randomElement(AllSchemas.names), AllSchemas.randomElement(AllSchemas.lastNames), gender);
+
+            insertActor(i, AllSchemas.randomFirstName(), AllSchemas.randomElement(AllSchemas.lastNames), gender);
         }
     }
 
@@ -212,7 +213,7 @@ public class Schema4 {
             if (i == 3000) {
                 insertDirector(i, "Woddy", "Allen"); // insert woddy allen in between
             } else {
-                insertDirector(i, AllSchemas.randomElement(AllSchemas.names), AllSchemas.randomElement(AllSchemas.lastNames));
+                insertDirector(i, AllSchemas.randomFirstName(), AllSchemas.randomElement(AllSchemas.lastNames));
             }
         }
     }
@@ -223,6 +224,9 @@ public class Schema4 {
             insertMovieDirection(3000, i);
         }
         for (int i = 351; i <= 5999; i++) {
+            if (i == 3000) {
+                continue;
+            }
             insertMovieDirection(i, i);
         }
         insertMovieDirection(6000, 80001);
@@ -240,24 +244,30 @@ public class Schema4 {
         }
         Collections.shuffle(Movies_Shuffled, AllSchemas.rand); // after shuffle
 
+        // random actors
         for (int j = 1; j <= 1000; j++) {
+            int movieId = Movies_Shuffled.get(j);
+            if (movieId == 80001 || movieId == 20001)
+                continue;
+            insertMovieCast(j, movieId, "Role" + j);
 
-            for (int i = 1; i <= 100; i++) {
-                if (j % 5 == 0) {
-                    insertMovieCast(j, 20001, "Role" + i);
-                    break;
-                } else {
-                    insertMovieCast(j, Movies_Shuffled.get(i), "Role" + i);
-                }
-            }
         }
+
+        // Actors who act in eyes wide shut
         for (int j = 1000; j <= 1150; j++) {
             insertMovieCast(j, 80001, "Role" + j);
-            insertMovieCast(j, 20001, "Role" + j);
-            insertMovieCast(j, 50000, "Role" + j);
+            int movieId1 = AllSchemas.random(1, 100000);
+            if (movieId1 != 20001 && movieId1 != 80001) {
+                insertMovieCast(j, movieId1, "Role" + j);
+            }
+
+            movieId1 = AllSchemas.random(1, 100000);
+            if (movieId1 != 20001 && movieId1 != 80001) {
+                insertMovieCast(j, movieId1, "Role" + j);
+            }
         }
 
-        for (int j = 1151; j <= 1174; j++) {
+        for (int j = 1; j <= 222; j++) {
             insertMovieCast(j, 20001, "Role" + j);
         }
 

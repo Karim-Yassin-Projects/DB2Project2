@@ -19,7 +19,7 @@ public class Schema1 {
     private static final int maxStudentsPerDept = 3000;
     private static final int minCoursesPerDept = 20;
     private static final int maxCoursesPerDept = 45;
-    private static final int minYear = 2016;
+    private static final int minYear = 2017;
     private static final int maxYear = 2024;
 
     private static final int INSERT_DEPARTMENT = 0;
@@ -261,7 +261,7 @@ public class Schema1 {
         System.out.println("populating sections");
         ArrayList<Integer> result = new ArrayList<>();
 
-        for (int year = minYear; year < maxYear; year++) {
+        for (int year = minYear; year <= maxYear; year++) {
             for (int semester = 1; semester < 3; semester++) {
                 for (Integer courseId : courses) {
                     int insId = AllSchemas.randomElement(instructors);

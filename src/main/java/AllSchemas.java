@@ -4,10 +4,15 @@ import java.util.Random;
 
 public class AllSchemas {
     public static final Random rand = new Random(1000);
-    public static final String[] names = {
-            "Ahmed", "Mohamed", "Ali", "Omar", "Amr", "Khaled", "Mahmoud", "Hassan", "Hussein",
-            "Kareem", "Yassin", "Youssef", "Tarek", "Sherif", "Raghad", "Hanin",
-            "Abdullah", "Youssef", "Tarek", "Mina", "Nour", "Hana", "Sara", "Nada", "Nouran"
+
+    public static final String[] femaleNames = {
+            "Nour", "Hana", "Sara", "Rana", "Raghad", "Hanin"
+    };
+
+    public static final String[] maleNames = {
+            "Ahmed", "Mohamed", "Omar",
+            "Kareem", "Yassin", "Sherif",
+            "Youssef", "Tarek"
     };
 
     public static final String[] lastNames = {
@@ -15,7 +20,13 @@ public class AllSchemas {
     };
 
     public static String randomName() {
-        return AllSchemas.randomElement(names) + " " + AllSchemas.randomElement(lastNames);
+        boolean male = randomBoolean();
+        return AllSchemas.randomElement(male ? maleNames : femaleNames) + " " + AllSchemas.randomElement(lastNames);
+    }
+
+    public static String randomFirstName() {
+        boolean male = randomBoolean();
+        return AllSchemas.randomElement(male ? maleNames : femaleNames);
     }
 
     public static <T> T randomElement(T[] arr) {
