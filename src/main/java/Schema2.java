@@ -1,387 +1,236 @@
 import java.sql.Connection;
 import java.sql.Date;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-
+import java.sql.Types;
 
 public class Schema2 {
-	
-//	CREATE TABLE Employee(Fname CHAR(20), Minit CHAR(10), Lname CHAR(20), ssn INT PRIMARY KEY, Bdate date, address CHAR(20), sex CHARACTER(1), salary INT, Super_snn INT REFERENCES Employee(ssn), dno INT);
+    private static final String[] relationships = {"child", "parent", "cousin"};
+    private static final String[] genders = {"F", "M"};
+    private static final int nEmployees = 16000;
+    private static final int nSupervisors = 4000;
+    private static final int nDepartments = 150;
+    private static final int nProjects = 9200;
 
-	 public static long insertEmployee(String Fname, String Minit,String Lname,int ssn, Date Bdate, String address, String sex, int salary, int superSSN, int dno, Connection conn) {
-         String SQL = "INSERT INTO Employee(Fname,Minit,Lname,ssn,Bdate,address,sex,salary,Super_snn,dno) "
-                 + "VALUES(?,?,?,?,?,?,?,?,?,?);";
-      
-         long id = 0;
-        try{
-        	 conn.setAutoCommit(false);
-            PreparedStatement pstmt = conn.prepareStatement(SQL,
-                    Statement.RETURN_GENERATED_KEYS);
-     
-                pstmt.setString(1, Fname);
-                pstmt.setString(2, Minit);
-                pstmt.setString(3, Lname);
-                pstmt.setInt(4, ssn);
-                pstmt.setDate(5, Bdate);
-                pstmt.setString(6, address);
-                pstmt.setString(7, sex);
-                pstmt.setInt(8, salary);
-                pstmt.setInt(9, superSSN);
-                pstmt.setInt(10, dno);
+    private static final int INSERT_EMPLOYEE = 0;
+    private static final int INSERT_DEPARTMENT = 1;
+    private static final int INSERT_DEPT_LOCATIONS = 2;
+    private static final int INSERT_PROJECT = 3;
+    private static final int INSERT_WORKS_ON = 4;
+    private static final int INSERT_DEPENDENT = 5;
 
-             int affectedRows = pstmt.executeUpdate();
-             System.out.println("Number of affected rows is " + affectedRows);
-             // check the affected rows 
-             if (affectedRows > 0) {
-                 // get the ID back
-                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
-//                	 System.out.println(rs.next());
-                     if (rs.next()) {
-                         id = rs.getLong(4);
-                         pstmt.close();
-                         conn.commit();
-                     }
-                 } catch (SQLException ex) {
-                	 ex.printStackTrace();
-                     System.out.println(ex.getMessage());
-                 }
-             }
-         } catch (SQLException ex) {
-             System.out.println(ex.getMessage());
-             ex.printStackTrace();
-         }
-         return id;
-     }
-//	 CREATE TABLE Department(Dname CHAR(20), Dnumber INT PRIMARY KEY, Mgr_snn int REFERENCES employee, Mgr_start_date date );
+    private static final PreparedStatement[] preparedStatements = new PreparedStatement[6];
 
-	 public static long insertDepartment(String Dname, int Dnumber,int MgrSSN, Date startDate, Connection conn) {
-         String SQL = "INSERT INTO Department(Dname,Dnumber,Mgr_snn,Mgr_start_date) "
-                 + "VALUES(?,?,?,?);";
-      
-         long id = 0;
-        try{
-        	 conn.setAutoCommit(false);
-            PreparedStatement pstmt = conn.prepareStatement(SQL,
-                    Statement.RETURN_GENERATED_KEYS);
-     
-                pstmt.setString(1, Dname);
-                pstmt.setInt(2, Dnumber);
-                pstmt.setInt(3, MgrSSN);
-                pstmt.setDate(4, startDate);
-                
-
-             int affectedRows = pstmt.executeUpdate();
-             System.out.println("Number of affected rows is " + affectedRows);
-             // check the affected rows 
-             if (affectedRows > 0) {
-                 // get the ID back
-                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
-//                	 System.out.println(rs.next());
-                     if (rs.next()) {
-                         id = rs.getLong(2);
-                         pstmt.close();
-                         conn.commit();
-                     }
-                 } catch (SQLException ex) {
-                	 ex.printStackTrace();
-                     System.out.println(ex.getMessage());
-                 }
-             }
-         } catch (SQLException ex) {
-             System.out.println(ex.getMessage());
-             ex.printStackTrace();
-         }
-         return id;
-     }
-//	 CREATE TABLE Dept_locations(Dnumber integer REFERENCES Department, Dlocation CHAR(20), PRIMARY KEY(Dnumber,Dlocation));
-	 public static long insertDeptLocations(int Dnumber,String Dlocation, Connection conn) {
-         String SQL = "INSERT INTO Dept_locations(Dnumber,Dlocation) "
-                 + "VALUES(?,?);";
-      
-         long id = 0;
-        try{
-        	 conn.setAutoCommit(false);
-            PreparedStatement pstmt = conn.prepareStatement(SQL,
-                    Statement.RETURN_GENERATED_KEYS);
-     
-                pstmt.setString(2, Dlocation);
-                pstmt.setInt(1, Dnumber);
-                
-                
-
-             int affectedRows = pstmt.executeUpdate();
-             System.out.println("Number of affected rows is " + affectedRows);
-             // check the affected rows 
-             if (affectedRows > 0) {
-                 // get the ID back
-                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
-//                	 System.out.println(rs.next());
-                     if (rs.next()) {
-                         id = rs.getLong(1);
-                         pstmt.close();
-                         conn.commit();
-                     }
-                 } catch (SQLException ex) {
-                	 ex.printStackTrace();
-                     System.out.println(ex.getMessage());
-                 }
-             }
-         } catch (SQLException ex) {
-             System.out.println(ex.getMessage());
-             ex.printStackTrace();
-         }
-         return id;
-     }
-
-//	 CREATE TABLE Project(Pname CHAR(20), Pnumber INT PRIMARY KEY, Plocation CHAR(50), Dnumber INT REFERENCES Department);
-	 public static long insertProject(String Pname, int Pnumber,String pLocation, int Dnumber, Connection conn) {
-         String SQL = "INSERT INTO Project(Pname,Pnumber,Plocation,Dnumber) "
-                 + "VALUES(?,?,?,?);";
-      
-         long id = 0;
-        try{
-        	 conn.setAutoCommit(false);
-            PreparedStatement pstmt = conn.prepareStatement(SQL,
-                    Statement.RETURN_GENERATED_KEYS);
-     
-                pstmt.setString(1, Pname);
-                pstmt.setInt(2, Pnumber);
-                pstmt.setString(3, pLocation);
-                pstmt.setInt(4, Dnumber);
-                
-
-             int affectedRows = pstmt.executeUpdate();
-             System.out.println("Number of affected rows is " + affectedRows);
-             // check the affected rows 
-             if (affectedRows > 0) {
-                 // get the ID back
-                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
-//                	 System.out.println(rs.next());
-                     if (rs.next()) {
-                         id = rs.getLong(2);
-                         pstmt.close();
-                         conn.commit();
-                     }
-                 } catch (SQLException ex) {
-                	 ex.printStackTrace();
-                     System.out.println(ex.getMessage());
-                 }
-             }
-         } catch (SQLException ex) {
-             System.out.println(ex.getMessage());
-             ex.printStackTrace();
-         }
-         return id;
-     }
-//	 CREATE TABLE Works_on(Essn int REFERENCES Employee, Pno int REFERENCES Project, Hours int, PRIMARY KEY(Essn,Pno));
-
-	 public static long insertWorksOn(int Essn,int pNo, int hours, Connection conn) {
-         String SQL = "INSERT INTO Works_on(Essn,Pno,Hours) "
-                 + "VALUES(?,?,?);";
-      
-         long id = 0;
-        try{
-        	 conn.setAutoCommit(false);
-            PreparedStatement pstmt = conn.prepareStatement(SQL,
-                    Statement.RETURN_GENERATED_KEYS);
-     
-                pstmt.setInt(2, pNo);
-                pstmt.setInt(1, Essn);
-                pstmt.setInt(3, hours);
-
-                
-
-             int affectedRows = pstmt.executeUpdate();
-             System.out.println("Number of affected rows is " + affectedRows);
-             // check the affected rows 
-             if (affectedRows > 0) {
-                 // get the ID back
-                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
-//                	 System.out.println(rs.next());
-                     if (rs.next()) {
-                         id = rs.getLong(1);
-                         pstmt.close();
-                         conn.commit();
-                     }
-                 } catch (SQLException ex) {
-                	 ex.printStackTrace();
-                     System.out.println(ex.getMessage());
-                 }
-             }
-         } catch (SQLException ex) {
-             System.out.println(ex.getMessage());
-             ex.printStackTrace();
-         }
-         return id;
-     }
-//	 CREATE TABLE Dependent(Essn INT REFERENCES Employee, Dependent_name CHAR(20), sex CHARACTER(1), Bdate date, Relationship CHAR(20), PRIMARY KEY(Essn, Dependent_name));
-	 public static long insertDependent(int Essn, String dependentName,String sex, Date Bdate,String relationship, Connection conn) {
-         String SQL = "INSERT INTO Dependent(Essn,Dependent_name,sex,Bdate,Relationship) "
-                 + "VALUES(?,?,?,?,?);";
-      
-         long id = 0;
-        try{
-        	 conn.setAutoCommit(false);
-            PreparedStatement pstmt = conn.prepareStatement(SQL,
-                    Statement.RETURN_GENERATED_KEYS);
-     
-                pstmt.setInt(1, Essn);
-                pstmt.setString(2, dependentName);
-                pstmt.setString(3, sex);
-                pstmt.setDate(4, Bdate);
-                pstmt.setString(5, relationship);
+    public Schema2(Connection conn) throws SQLException {
+        preparedStatements[INSERT_EMPLOYEE] = conn.prepareStatement("INSERT INTO employee(fname,minit,lname,ssn,bdate,address,sex,salary,super_snn,dno) VALUES(?,?,?,?,?,?,?,?,?,?);");
+        preparedStatements[INSERT_DEPARTMENT] = conn.prepareStatement("INSERT INTO department(dname,dnumber,mgr_snn,mgr_start_date) VALUES(?,?,?,?);");
+        preparedStatements[INSERT_DEPT_LOCATIONS] = conn.prepareStatement("INSERT INTO dept_locations(dnumber,dlocation) VALUES(?,?);");
+        preparedStatements[INSERT_PROJECT] = conn.prepareStatement("INSERT INTO project(Pname,Pnumber,Plocation,Dnumber) VALUES(?,?,?,?);");
+        preparedStatements[INSERT_WORKS_ON] = conn.prepareStatement("INSERT INTO works_on(essn,pno,hours) VALUES(?,?,?);");
+        preparedStatements[INSERT_DEPENDENT] = conn.prepareStatement("INSERT INTO dependent(essn,dependent_name,sex,bdate,relationship) VALUES(?,?,?,?,?);");
+    }
 
 
-             int affectedRows = pstmt.executeUpdate();
-             System.out.println("Number of affected rows is " + affectedRows);
-             // check the affected rows 
-             if (affectedRows > 0) {
-                 // get the ID back
-                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
-//                	 System.out.println(rs.next());
-                     if (rs.next()) {
-                         id = rs.getLong(1);
-                         pstmt.close();
-                         conn.commit();
-                     }
-                 } catch (SQLException ex) {
-                	 ex.printStackTrace();
-                     System.out.println(ex.getMessage());
-                 }
-             }
-         } catch (SQLException ex) {
-             System.out.println(ex.getMessage());
-             ex.printStackTrace();
-         }
-         return id;
-     }
-	 
-	 /////////////////////////////////////////////// Data Population Methods //////////////////////////////////////////////////////////////
-	 @SuppressWarnings("deprecation")
-	public static void populateEmployee(Connection conn) {
-		 for (int i = 1; i < 10000; i++) {
-                String result = "M";
-                if (i > 5000) 
-                	result = "F";
-				if (insertEmployee("Employee" + i, "M" + i,"Employee" + i, i, new Date(22,1,1999), "address" + i ,result,i,i,i, conn) == 0) {
-					System.err.println("insertion of record " + i + " failed");
-					break;
-				} else
-					System.out.println("insertion was successful");
-			}
-		 int i = 10000;
-			insertEmployee("Employee" + i, "M" + i,"Employee" + i, i, new Date(22,1,1999), "address" + i ,"M",i,i,1, conn);
-          i++;
-			insertEmployee("Employee" + i, "M" + i,"Employee" + i, i, new Date(22,1,1999), "address" + i ,"M",i,i,1, conn);
+    // CREATE TABLE Employee(Fname CHAR(20), Minit CHAR(10), Lname CHAR(20), ssn INT
+    // PRIMARY KEY, Bdate date, address CHAR(20), sex CHARACTER(1), salary INT,
+    // Super_snn INT REFERENCES Employee(ssn), dno INT);
 
-	 }
-	 
-	 @SuppressWarnings("deprecation")
-	public static void populateDepartment(Connection conn) {
-		 for (int i = 1; i < 10000; i++) {
-				if (insertDepartment("Department" + i, i,i,new Date(1,1,1990), conn) == 0) {
-					System.err.println("insertion of record " + i + " failed");
-					break;
-				} else
-					System.out.println("insertion was successful");
-			}
-	 }
-		public static void populateDeptLocations(Connection conn) {
-			 for (int i = 1; i < 10000; i++) {
-					if (insertDeptLocations(i, "Location" + i, conn) == 0) {
-						System.err.println("insertion of record " + i + " failed");
-						break;
-					} else
-						System.out.println("insertion was successful");
-				}
-		 }
-		
-		public static void populateProject(Connection conn) {
-			 for (int i = 1; i < 10000; i++) {
-					if (insertProject("Project" + i, i,"Location1" + i,i, conn) == 0) {
-						System.err.println("insertion of record " + i + " failed");
-						break;
-					} else
-						System.out.println("insertion was successful");
-				}
-		 }
-		public static void populateWorksOn(Connection conn) {
-			 for (int i = 1; i < 10000; i++) {
-					if (insertWorksOn(i, i, i, conn) == 0) {
-						System.err.println("insertion of record " + i + " failed");
-						break;
-					} else
-						System.out.println("insertion was successful");
-				}
-		 }
-		@SuppressWarnings("deprecation")
-		public static void populateDependent(Connection conn) {
-			 for (int i = 1; i < 10000; i++) {
-				 String result = "F";
-				 if (i > 5000) 
-					 result = "M";
-					if (insertDependent(i, "Name" + i, result,new Date(1,1,1999),"child", conn) == 0) {
-						System.err.println("insertion of record " + i + " failed");
-						break;
-					} else
-						System.out.println("insertion was successful");
-				}
-		 }
-		
-		public static void insertSchema2(Connection connection) {
-			populateEmployee(connection);
-			populateDepartment(connection);
-			populateDeptLocations(connection);
-			populateProject(connection);
-			populateWorksOn(connection);
-			populateDependent(connection);
-		}
-		
-	public static void main(String[] argv) {
+    private void insertEmployee(String Fname, String Minit, String Lname, int ssn, Date Bdate, String address, String sex, int salary, Integer superSSN, int dno) throws SQLException {
 
-		System.out.println("-------- PostgreSQL "
-				+ "JDBC Connection Testing ------------");
+        PreparedStatement pstmt = preparedStatements[INSERT_EMPLOYEE];
 
-		try {
+        pstmt.setString(1, Fname);
+        pstmt.setString(2, Minit);
+        pstmt.setString(3, Lname);
+        pstmt.setInt(4, ssn);
+        pstmt.setDate(5, Bdate);
+        pstmt.setString(6, address);
+        pstmt.setString(7, sex);
+        pstmt.setInt(8, salary);
+        if (superSSN == null) {
+            pstmt.setNull(9, Types.INTEGER);
+        } else {
+            pstmt.setInt(9, superSSN);
+        }
+        pstmt.setInt(10, dno);
 
-			Class.forName("org.postgresql.Driver");
+        pstmt.executeUpdate();
+    }
+    // CREATE TABLE Department(Dname CHAR(20), Dnumber INT PRIMARY KEY, Mgr_snn int
+    // REFERENCES employee, Mgr_start_date date );
 
-		} catch (ClassNotFoundException e) {
+    private void insertDepartment(String Dname, int Dnumber, int MgrSSN, Date startDate)
+            throws SQLException {
+        PreparedStatement pstmt = preparedStatements[INSERT_DEPARTMENT];
 
-			System.out.println("Where is your PostgreSQL JDBC Driver? "
-					+ "Include in your library path!");
-			e.printStackTrace();
-			return;
+        pstmt.setString(1, Dname);
+        pstmt.setInt(2, Dnumber);
+        pstmt.setInt(3, MgrSSN);
+        pstmt.setDate(4, startDate);
+        pstmt.executeUpdate();
+    }
 
-		}
+    // CREATE TABLE Dept_locations(Dnumber integer REFERENCES Department, Dlocation
+    // CHAR(20), PRIMARY KEY(Dnumber,Dlocation));
+    private void insertDeptLocations(int Dnumber, String Dlocation) throws SQLException {
+        PreparedStatement pstmt = preparedStatements[INSERT_DEPT_LOCATIONS];
 
-		System.out.println("PostgreSQL JDBC Driver Registered!");
+        pstmt.setString(2, Dlocation);
+        pstmt.setInt(1, Dnumber);
+        pstmt.executeUpdate();
+    }
 
-		Connection connection = null;
+    // CREATE TABLE Project(Pname CHAR(20), Pnumber INT PRIMARY KEY, Plocation
+    // CHAR(50), Dnumber INT REFERENCES Department);
+    public static void insertProject(String Pname, int Pnumber, String pLocation, int Dnumber)
+            throws SQLException {
+        PreparedStatement pstmt = preparedStatements[INSERT_PROJECT];
 
-		try {
+        pstmt.setString(1, Pname);
+        pstmt.setInt(2, Pnumber);
+        pstmt.setString(3, pLocation);
+        pstmt.setInt(4, Dnumber);
+        pstmt.executeUpdate();
+    }
 
-			connection = DriverManager.getConnection(
-					"jdbc:postgresql://127.0.0.1:5432/schema2", "postgres",
-					"YOUR PASSWORD");
-            insertSchema2(connection);
-			
+    // CREATE TABLE Works_on(Essn int REFERENCES Employee, Pno int REFERENCES
+    // Project, Hours int, PRIMARY KEY(Essn,Pno));
+    public boolean insertWorksOn(int Essn, int pNo, int hours) throws SQLException {
+        boolean success = false;
 
-		} catch (SQLException e) {
+        PreparedStatement pstmt = preparedStatements[INSERT_WORKS_ON];
 
-			System.out.println("Connection Failed! Check output console");
-			e.printStackTrace();
-			return;
+        pstmt.setInt(2, pNo);
+        pstmt.setInt(1, Essn);
+        pstmt.setInt(3, hours);
+        try {
+            pstmt.executeUpdate();
+            success = true;
+        } catch (SQLException e) {
+            if (!e.getSQLState().equals("23505")) {
+                throw e;
+            }
+        }
 
-		}
+        return success;
+    }
 
-		if (connection != null) {
-			System.out.println("You made it, take control your database now!");
-		} else {
-			System.out.println("Failed to make connection!");
-		}
-	}
+    // CREATE TABLE Dependent(Essn INT REFERENCES Employee, Dependent_name CHAR(20),
+    // sex CHARACTER(1), Bdate date, Relationship CHAR(20), PRIMARY KEY(Essn,
+    // Dependent_name));
+    public void insertDependent(int Essn, String dependentName, String sex, Date Bdate, String relationship) throws SQLException {
+        PreparedStatement pstmt = preparedStatements[INSERT_DEPENDENT];
+
+        pstmt.setInt(1, Essn);
+        pstmt.setString(2, dependentName);
+        pstmt.setString(3, sex);
+        pstmt.setDate(4, Bdate);
+        pstmt.setString(5, relationship);
+
+        pstmt.executeUpdate();
+    }
+
+    /////////////////////////////////////////////// Data Population Methods
+    /////////////////////////////////////////////// //////////////////////////////////////////////////////////////
+    private void populateEmployee() throws SQLException {
+        System.out.println("Populating Employee");
+        // inserting Supervisors
+        for (int i = 1; i <= nSupervisors; i++) {
+            String sex = AllSchemas.randomElement(genders);
+            int random_supervisor_salary = AllSchemas.random(10000, 60001);
+            int random_department = AllSchemas.random(1, 151);
+            insertEmployee(AllSchemas.randomElement(AllSchemas.names),
+                    Character.toString(AllSchemas.random('A', 'Z' + 1)),
+                    i == 1 ? "employee1" : AllSchemas.randomElement(AllSchemas.lastNames), i,
+                    AllSchemas.randomDateOfBirth(), "address" + i, sex,
+                    random_supervisor_salary, null, random_department);
+        }
+
+        for (int i = nSupervisors + 1; i <= nEmployees; i++) {
+            String sex = AllSchemas.randomElement(genders);
+            int random_department = AllSchemas.random(1, 151);
+            int random_salary;
+            if (random_department == 5) {
+                random_salary = AllSchemas.random(10000, 20001);
+            } else {
+                random_salary = AllSchemas.random(10000, 60001);
+            }
+            int superSNN = AllSchemas.random(1, nSupervisors + 1);
+            insertEmployee(
+                    AllSchemas.randomElement(AllSchemas.names),
+                    Character.toString(AllSchemas.random('A', 'Z' + 1)),
+                    AllSchemas.randomElement(AllSchemas.lastNames), i, AllSchemas.randomDateOfBirth(), "address" + i, sex,
+                    random_salary, superSNN, random_department);
+        }
+
+    }
+
+    private void populateDepartment() throws SQLException {
+        System.out.println("Populating Department");
+        for (int i = 1; i <= nDepartments; i++) {
+            int random_manager = AllSchemas.random(1, nSupervisors + 1);
+            insertDepartment("Department" + i, i, random_manager,
+                    AllSchemas.randomDate());
+        }
+    }
+
+    private void populateDeptLocations() throws SQLException {
+        System.out.println("Populating Dept_Locations");
+        for (int i = 1; i <= nDepartments; i++) {
+            insertDeptLocations(i, "Location" + i);
+        }
+    }
+
+    private void populateProject() throws SQLException {
+        System.out.println("Populating Project");
+        for (int i = 1; i <= nProjects; i++) {
+            int depts = AllSchemas.random(1, nDepartments + 1);
+            insertProject("Project" + i, i, "Location" + depts, depts);
+        }
+    }
+
+    public void populateWorksOn() throws SQLException {
+        System.out.println("Populating Works_On");
+        for (int j = 1; j <= 16000; j++) {
+            int projects;
+            if (j == 1) {
+                projects = 600;
+            } else {
+                projects = 2;
+            }
+            for (int i = 1; i <= projects; i++) {
+                int randomHours = AllSchemas.random(1, 100);
+                int randomProject = AllSchemas.random(1, nProjects + 1);
+                if (!insertWorksOn(j, randomProject, randomHours)) {
+                    i--;
+                }
+            }
+        }
+    }
+
+    private void populateDependent() throws SQLException {
+        System.out.println("Populating Dependent");
+        for (int i = 1; i <= 700; i++) {
+            String sex = AllSchemas.randomElement(genders);
+            String relation = AllSchemas.randomElement(relationships);
+            if (i <= 600) {
+                insertDependent(i, AllSchemas.randomElement(AllSchemas.names), sex, AllSchemas.randomDate(), relation);
+            } else {
+                int random_employee = AllSchemas.random(1, nEmployees + 1);
+                insertDependent(i, "employee" + random_employee, sex,
+                        AllSchemas.randomDateOfBirth()
+                        , relation);
+            }
+        }
+    }
+
+    public static void insertSchema2(Connection connection) throws SQLException {
+        Schema2 schema2 = new Schema2(connection);
+        schema2.populateEmployee();
+        schema2.populateDepartment();
+        schema2.populateDeptLocations();
+        schema2.populateProject();
+        schema2.populateWorksOn();
+        schema2.populateDependent();
+    }
 }

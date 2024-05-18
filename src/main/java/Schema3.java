@@ -1,211 +1,111 @@
 import java.sql.Connection;
 import java.sql.Date;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-
+import java.util.ArrayList;
 
 public class Schema3 {
-	
-//	CREATE TABLE Sailors(sid INT PRIMARY KEY, sname CHAR(20), rating INT, age REAL);
+    private static final String[] colors = {"white", "red", "green", "blue", "black", "yellow", "orange", "violet", "brown", "cyan"};
+    public static final int nSailors = 19000;
+    public static final int nBoats = 3000;
+    public static final int nReserves = 35000;
 
+    private static final int INSERT_SAILOR = 0;
+    private static final int INSERT_BOAT = 1;
+    private static final int INSERT_RESERVES = 2;
 
-	 public static long insertSailor(int ID, String Name, int rating , double age,Connection conn) {
-         String SQL = "INSERT INTO Sailors(sid,sname,rating,age) "
-                 + "VALUES(?,?,?,?);";
-      
-         long id = 0;
-        try{
-        	 conn.setAutoCommit(false);
-            PreparedStatement pstmt = conn.prepareStatement(SQL,
-                    Statement.RETURN_GENERATED_KEYS);
-     
-                pstmt.setInt(1, ID);
-                pstmt.setString(2, Name);
-                pstmt.setInt(3,rating);
-                pstmt.setDouble(4,age);
+    private final PreparedStatement[] preparedStatements = new PreparedStatement[3];
 
-             int affectedRows = pstmt.executeUpdate();
-             System.out.println("Number of affected rows is " + affectedRows);
-             // check the affected rows 
-             if (affectedRows > 0) {
-                 // get the ID back
-                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
-//                	 System.out.println(rs.next());
-                     if (rs.next()) {
-                         id = rs.getLong(1);
-                         pstmt.close();
-                         conn.commit();
-                     }
-                 } catch (SQLException ex) {
-                	 ex.printStackTrace();
-                     System.out.println(ex.getMessage());
-                 }
-             }
-         } catch (SQLException ex) {
-             System.out.println(ex.getMessage());
-             ex.printStackTrace();
-         }
-         return id;
-     }
-//	 CREATE TABLE Boat(bid INT PRIMARY KEY, bname CHAR(20), color CHAR(10));
-	 public static long insertBoat(int ID, String Name, String color, Connection conn) {
-         String SQL = "INSERT INTO Boat(bid,bname,color) "
-                 + "VALUES(?,?,?);";
-      
-         long id = 0;
-        try{
-        	 conn.setAutoCommit(false);
-            PreparedStatement pstmt = conn.prepareStatement(SQL,
-                    Statement.RETURN_GENERATED_KEYS);
-     
-                pstmt.setInt(1, ID);
-                pstmt.setString(2, Name);
-                pstmt.setString(3,color);
+    public Schema3(Connection conn) throws SQLException {
+        preparedStatements[INSERT_SAILOR] = conn.prepareStatement("INSERT INTO Sailors(sid,sname,rating,age) VALUES(?,?,?,?);", PreparedStatement.RETURN_GENERATED_KEYS);
+        preparedStatements[INSERT_BOAT] = conn.prepareStatement("INSERT INTO Boat(bid,bname,color) VALUES(?,?,?);", PreparedStatement.RETURN_GENERATED_KEYS);
+        preparedStatements[INSERT_RESERVES] = conn.prepareStatement("INSERT INTO Reserves(sid,bid,day) VALUES(?,?,?);");
+    }
 
-             int affectedRows = pstmt.executeUpdate();
-             System.out.println("Number of affected rows is " + affectedRows);
-             // check the affected rows 
-             if (affectedRows > 0) {
-                 // get the ID back
-                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
-//                	 System.out.println(rs.next());
-                     if (rs.next()) {
-                         id = rs.getLong(1);
-                         pstmt.close();
-                         conn.commit();
-                     }
-                 } catch (SQLException ex) {
-                	 ex.printStackTrace();
-                     System.out.println(ex.getMessage());
-                 }
-             }
-         } catch (SQLException ex) {
-             System.out.println(ex.getMessage());
-             ex.printStackTrace();
-         }
-         return id;
-     }
-//	 CREATE TABLE Reserves(sid INT REFERENCES Sailors, bid INT REFERENCES Boat, day date, PRIMARY KEY(sid,bid));
-	 public static long insertReserves(int sID, int bID, Date day, Connection conn) {
-         String SQL = "INSERT INTO Reserves(sid,bid,day) "
-                 + "VALUES(?,?,?);";
-      
-         long id = 0;
-        try{
-        	 conn.setAutoCommit(false);
-            PreparedStatement pstmt = conn.prepareStatement(SQL,
-                    Statement.RETURN_GENERATED_KEYS);
-     
-                pstmt.setInt(1, sID);
-                pstmt.setInt(2, bID);
-                pstmt.setDate(3, day);
+    private int insertSailor(int ID, String Name, int rating, double age) throws SQLException {
+        PreparedStatement pstmt = preparedStatements[INSERT_SAILOR];
 
-             int affectedRows = pstmt.executeUpdate();
-             System.out.println("Number of affected rows is " + affectedRows);
-             // check the affected rows 
-             if (affectedRows > 0) {
-                 // get the ID back
-                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
-//                	 System.out.println(rs.next());
-                     if (rs.next()) {
-                         id = rs.getLong(1);
-                         pstmt.close();
-                         conn.commit();
-                     }
-                 } catch (SQLException ex) {
-                	 ex.printStackTrace();
-                     System.out.println(ex.getMessage());
-                 }
-             }
-         } catch (SQLException ex) {
-             System.out.println(ex.getMessage());
-             ex.printStackTrace();
-         }
-         return id;
-     }
-	 
-	 
-	 
-	 ///////////////////////////////////////////////////////// Data Population Methods //////////////////////////////////////////////////////////
-	 public static void populateSailor(Connection conn) {
-		 for (int i = 1; i < 10000; i++) {
-				if (insertSailor(i, "Sailor" + i,i,i, conn) == 0) {
-					System.err.println("insertion of record " + i + " failed");
-					break;
-				} else
-					System.out.println("insertion was successful");
-			}
-	 }
-	 public static void populateBoat(Connection conn) {
-		 for (int i = 1; i < 10000; i++) {
-				if (insertBoat(i, "Boat" + i,"Red", conn) == 0) {
-					System.err.println("insertion of record " + i + " failed");
-					break;
-				} else
-					System.out.println("insertion was successful");
-			}
-	 }
-	 @SuppressWarnings("deprecation")
-	public static void populateReserves(Connection conn) {
-		 for (int i = 1; i < 10000; i++) {
-				if (insertReserves(i, i,new Date(1,1,1999), conn) == 0) {
-					System.err.println("insertion of record " + i + " failed");
-					break;
-				} else
-					System.out.println("insertion was successful");
-			}
-	 }
-	 public static void insertSchema3(Connection connection) {
-			populateSailor(connection);
-			populateBoat(connection);
-			populateReserves(connection);
-	 }
-	 
-	public static void main(String[] argv) {
+        pstmt.setInt(1, ID);
+        pstmt.setString(2, Name);
+        pstmt.setInt(3, rating);
+        pstmt.setDouble(4, age);
 
-		System.out.println("-------- PostgreSQL "
-				+ "JDBC Connection Testing ------------");
+        return AllSchemas.getGeneratedId(pstmt);
+    }
 
-		try {
+    // CREATE TABLE Boat(bid INT PRIMARY KEY, bname CHAR(20), color CHAR(10));
+    private int insertBoat(int ID, String Name, String color) throws SQLException {
+        PreparedStatement pstmt = preparedStatements[INSERT_BOAT];
 
-			Class.forName("org.postgresql.Driver");
+        pstmt.setInt(1, ID);
+        pstmt.setString(2, Name);
+        pstmt.setString(3, color);
 
-		} catch (ClassNotFoundException e) {
+        return AllSchemas.getGeneratedId(pstmt);
+    }
 
-			System.out.println("Where is your PostgreSQL JDBC Driver? "
-					+ "Include in your library path!");
-			e.printStackTrace();
-			return;
+    // CREATE TABLE Reserves(sid INT REFERENCES Sailors, bid INT REFERENCES Boat,
+    // day date, PRIMARY KEY(sid,bid));
+    private boolean insertReserves(int sID, int bID, Date day) throws SQLException {
+        PreparedStatement pstmt = preparedStatements[INSERT_RESERVES];
+        boolean success = false;
+        pstmt.setInt(1, sID);
+        pstmt.setInt(2, bID);
+        pstmt.setDate(3, day);
 
-		}
+        try {
+            pstmt.executeUpdate();
+            success = true;
+        } catch (SQLException e) {
+            if (!e.getSQLState().equals("23505")) {
+                throw e;
+            }
+        }
+        return success;
+    }
 
-		System.out.println("PostgreSQL JDBC Driver Registered!");
+    ///////////////////////////////////////////////////////// Data Population
+    ///////////////////////////////////////////////////////// Methods
+    ///////////////////////////////////////////////////////// //////////////////////////////////////////////////////////
+    private ArrayList<Integer> populateSailor() throws SQLException {
+        System.out.println("Populating sailors");
+        ArrayList<Integer> result = new ArrayList<>();
+        for (int i = 1; i <= nSailors; i++) {
+            int age = AllSchemas.random(18, 60);
+            int rating = AllSchemas.random(1, 11);
+            int sailorID = insertSailor(i, AllSchemas.randomName(), rating, age);
+            result.add(sailorID);
+        }
+        return result;
+    }
 
-		Connection connection = null;
+    private ArrayList<Integer> populateBoat() throws SQLException {
+        System.out.println("Populating boats");
+        ArrayList<Integer> result = new ArrayList<>();
+        for (int i = 1; i <= nBoats; i++) {
+            String color = AllSchemas.randomElement(colors);
+            int boatID = insertBoat(i, "Boat" + i, color);
+            result.add(boatID);
+        }
+        return result;
+    }
 
-		try {
+    private void populateReserves(ArrayList<Integer> boats, ArrayList<Integer> sailors)
+            throws SQLException {
+        System.out.println("Populating reserves");
+        for (int i = 1; i <= nReserves; i++) {
+            int boatID = AllSchemas.randomBoolean() ? 103 : AllSchemas.randomElement(boats);
+            int sailorID = AllSchemas.randomElement(sailors);
+            if (!insertReserves(sailorID, boatID, AllSchemas.randomDate())) {
+                i--;
+            }
+        }
+    }
 
-			connection = DriverManager.getConnection(
-					"jdbc:postgresql://127.0.0.1:5432/schema3", "postgres",
-					"YOUR PASSWORD");
-
-            insertSchema3(connection);
-		
-		} catch (SQLException e) {
-
-			System.out.println("Connection Failed! Check output console");
-			e.printStackTrace();
-			return;
-
-		}
-
-		if (connection != null) {
-			System.out.println("You made it, take control your database now!");
-		} else {
-			System.out.println("Failed to make connection!");
-		}
-	}
+    public static void insertSchema3(Connection connection) throws SQLException {
+        Schema3 schema3 = new Schema3(connection);
+        ArrayList<Integer> sailors = schema3.populateSailor();
+        ArrayList<Integer> boats = schema3.populateBoat();
+        schema3.populateReserves(boats, sailors);
+    }
 }
